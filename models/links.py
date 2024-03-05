@@ -1,8 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import declarative_base
 from pydantic import BaseModel
-
-Base = declarative_base()
 
 class Links(Base):
     __tablename__ = "links"
@@ -20,4 +17,3 @@ class LinksSchema(BaseModel):
 
     class Config:
         populate_by_name = True
-
