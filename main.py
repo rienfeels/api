@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from config import Settings
 from db import SessionLocal 
-from models import Links, LinksSchema
+from models.links import Links, LinksSchema
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import shortuuid  # Import the shortuuid library
@@ -42,9 +42,10 @@ def read_links(db: Session = Depends(get_db)):
     links = db.query(Links).all()
     return {"links": [{"short_url": link.short_url, "long_url": link.long_url} for link in links]}
 
+
 origins = [
     "http://localhost:*",
-    "http://localhost:5176",
+    "http://localhost:5173",
 ]
 
 app.add_middleware(
