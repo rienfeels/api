@@ -10,3 +10,6 @@ def create_user(user: UserAccountSchema):
     session.commit()
     session.refresh(db_user)
     return db_user
+
+def get_user(email: str):
+    return session.query(User).filter(User.email == email).one()
