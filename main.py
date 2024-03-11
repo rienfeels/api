@@ -1,14 +1,20 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from config import settings
-from db import engine, session  # Assuming you have 'session' defined in your 'db' module
+from db import engine, session  
 from models.links import Links, LinksSchema
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import shortuuid  
+from fastapi.security import OAuth2PasswordBearer
 from models.base import Base
 from models.users import User, UserSchema, UserAccountSchema
+from models.token import Token, TokenData, create_access_token
 from services import create_user, get_user
+from datetime import date, timedelta
+from starlette.responses import RedirectResponse
+import jwt
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def create_tables():
     Base.metadata.create_all(bind=engine)
@@ -87,4 +93,13 @@ async def login(payload: UserAccountSchema):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid User Credentials"
         )
-    return {"detail": "Successful Login"}
+    access_token_expires = timedelta(minutes=120)
+    access_token = create_access_token(
+        data={"email": user.email}, expires_delta=access_token_expires
+    )
+    return Token(access_token=access_token, token_type="bearer")
+
+@app.get("/sendit")
+async def redirect_to_external_url(url: str = Query(...)):
+    link = session.query(Links).filter(Links.short_url == url).first()
+    return RedirectResponse(link.long_url)
